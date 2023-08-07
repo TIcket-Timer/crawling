@@ -5,6 +5,24 @@ from urllib.request import urlopen
 from collections import defaultdict
 import json
 import requests
+from multiprocessing.dummy import Pool as ThreadPool
+def save(musical):
+    u = musical.select('a')[0]['href']
+    goods_number = get_goods_number(musical.select('a')[0]['href'])
+    image_url = musical.select('a')[0].select('img')[0]['src']
+    res = get_info(goods_number)
+    res['posterUrl'] = image_url
+    request_url = 'http://localhost:8080/api/musicals/'
+    response = requests.post(request_url, json=res)
+    print(response)
+
+
+def work_thread(musicals, thread_num=10):
+    pool = ThreadPool(thread_num)
+    pool.map(save, musicals)
+    pool.close()
+    pool.join()
+
 def get_actors(goods_number):
     url = f'https://api-ticketfront.interpark.com/v1/goods/casting?castingRole=LEAD&goodsCode={goods_number}'
 
@@ -34,16 +52,16 @@ def get_info(goods_number):
     running_time = data['runningTime']
     site_link = f'https://tickets.interpark.com/goods/{goods_number}'
     res = {
-        'musical_id' : goods_number,
-        'site_id' : 1,
+        'id' : str(goods_number),
+        'siteCategory' : 'INTERPARK',
         'title' : title,
-        'poster_url' : poster_url,
-        'start_date' : start_date,
-        'end_date' : end_date,
+        'posterUrl' : poster_url,
+        'startDate' : start_date,
+        'endDate' : end_date,
         'place' : place,
-        'running_time' : running_time,
-        'site_link' : site_link,
-        'actors' : get_actors(goods_number)
+        'runningTime' : running_time,
+        'siteLink' : site_link,
+        # 'actors' : get_actors(goods_number)
     }
     return res
 
@@ -67,13 +85,14 @@ def lambda_handler(event, context):
     soup = BeautifulSoup(text, 'html.parser')
     # musicals = soup.select('span.fw_bold > a')
     musicals = soup.select('td.RKthumb')
-    for musical in musicals:
-        u = musical.select('a')[0]['href']
-        goods_number = get_goods_number(musical.select('a')[0]['href'])
-        image_url = musical.select('a')[0].select('img')[0]['src']
-        res = get_info(goods_number)
-        res['poster_url'] = image_url
-        print(res)
-        # print(res)
+    work_thread(musicals, 100)
+    # for musical in musicals:
+    #     u = musical.select('a')[0]['href']
+    #     goods_number = get_goods_number(musical.select('a')[0]['href'])
+    #     image_url = musical.select('a')[0].select('img')[0]['src']
+    #     res = get_info(goods_number)
+    #     res['poster_url'] = image_url
+    #     print(res)
+    #     # print(res)
     # 공연
 lambda_handler(None, None)
