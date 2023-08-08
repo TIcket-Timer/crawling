@@ -12,9 +12,13 @@ def save(musical):
     image_url = musical.select('a')[0].select('img')[0]['src']
     res = get_info(goods_number)
     res['posterUrl'] = image_url
-    request_url = 'http://localhost:8080/api/musicals/'
-    response = requests.post(request_url, json=res)
-    print(response)
+    musical_request_url = 'http://localhost:8080/api/musicals'
+    response = requests.post(musical_request_url, json=res)
+    actors = get_actors(goods_number)
+    for i in actors:
+        actor_request_url = 'http://localhost:8080/api/actors'
+        response = requests.post(actor_request_url, json=i)
+    print(response.text)
 
 
 def work_thread(musicals, thread_num=10):
@@ -29,14 +33,16 @@ def get_actors(goods_number):
 
     response = requests.get(url)
     data = response.json()['data']
-    actors = defaultdict(list)
+    actors = []
     for actor in data:
         actor_info = {
+            'musicalId' : goods_number,
             'actorName' : actor['manName'],
-            'image' : actor['image1FileUrl']
+            'roleName' : actor['characterName'],
+            'profileUrl' : actor['image1FileUrl']
         }
-        actors[actor['characterName']].append(actor_info)
-    return dict(actors)
+        actors.append(actor_info)
+    return actors
 
 def get_info(goods_number):
 
@@ -83,16 +89,25 @@ def lambda_handler(event, context):
     # 디코딩
     text = f.read().decode('euc-kr')
     soup = BeautifulSoup(text, 'html.parser')
-    # musicals = soup.select('span.fw_bold > a')
+    musicals = soup.select('span.fw_bold > a')
     musicals = soup.select('td.RKthumb')
+    print(musicals)
     work_thread(musicals, 100)
+    request = [] # Musical 정보
     # for musical in musicals:
     #     u = musical.select('a')[0]['href']
     #     goods_number = get_goods_number(musical.select('a')[0]['href'])
     #     image_url = musical.select('a')[0].select('img')[0]['src']
-    #     res = get_info(goods_number)
-    #     res['poster_url'] = image_url
-    #     print(res)
+    #     # 뮤지컬 정보 얻기
+    #     info = get_info(goods_number)
+    #     info['poster_url'] = image_url
+    #     request.append(info)
+    #     print(info)
+    #
+    #     # 배우 정보 얻기
+    #     actors = get_actors(goods_number)
+    #     print(actors)
+    #
     #     # print(res)
     # 공연
 lambda_handler(None, None)

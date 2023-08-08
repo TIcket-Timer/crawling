@@ -24,7 +24,7 @@ def get_info(url):
         actor_str += (actor.text + ', ')
     actor_str = actor_str[:-2]
 
-    date = soup.select('span.ps-date')[0].text
+    date = soup.select('span.ps-date')[0].text.replace('.', '')
 
     if '~' not in date :
         start_date = date
@@ -36,16 +36,16 @@ def get_info(url):
     place = soup.select('span.ps-location')[0].text
 
     res = {
-        'musical_id' : id,
-        'site_id' : 3,
+        'id' : id,
+        'siteCategory' : 'YES24',
         'title' : title,
-        'poster_url' : poster_url,
-        'start_date' : start_date,
-        'end_date' : end_date,
+        'posterUrl' : poster_url,
+        'startDate' : start_date,
+        'endDate' : end_date,
         'place' : place,
-        'running_time' : running_time,
-        'site_link' : url,
-        'actors' : actor_str
+        'runningTime' : running_time,
+        'siteLink' : url
+
     }
     print(res)
     return res
@@ -60,9 +60,14 @@ def lambda_handler(event, context):
 
     soup = BeautifulSoup(response.text, 'html.parser')
     musicals = soup.select('#yesSchList > li > div')
+    request_url = "http://localhost:8080/api/musicals/"
 
     for musical in musicals:
         u = musical.select('a')[0]['href']
-        get_info(u)
+        info = get_info(u)
+        print(info)
+        # response = requests.post(request_url, json=info)
+        print(response.text)
+        print(response.status_code)
 
 lambda_handler(None, None)
