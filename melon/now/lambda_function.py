@@ -15,13 +15,16 @@ place = []
 runningTime = []
 musical_id = []
 site_link = []
+actors_img = []
 actors = []
+roles = []
+actor_imgs = []
 res = requests.get(url,headers=header)
 html = res.text
 json_html = json.loads(html)
 
 try:
-  for i in range(16):
+  for i in range(17):
       if json_html["data"][i]["perfTypeName"] != "뮤지컬":
           continue
 
@@ -30,8 +33,11 @@ try:
       res = requests.get(url,headers=header)
       html = res.text
       soup = BeautifulSoup(html,'html.parser')
-      actor_list = soup.select(".singer")
+      actor_list = soup.select(".singer") # 배우명
+      casting_list = soup.select(".part") # 배역
+      actor_img_list = soup.select(".thumb > .crop img") # 사진
 
+      # 배우명 리스트 생성
       if not actor_list:
           actor_list = '-'
           actors.append(actor_list)
@@ -41,6 +47,29 @@ try:
             new_actor_list.append(actor.text)
         actor_list = ','.join(new_actor_list)
         actors.append(actor_list)
+
+      # 캐스팅 리스트 생성
+      if not casting_list:
+        casting_list = '-'
+        roles.append(casting_list)
+      else:
+        new_casting_list = []
+        for casting in casting_list: 
+           new_casting_list.append(casting.text)
+        casting_list = ','.join(new_casting_list)
+        roles.append(casting_list)
+
+      # 배우 사진 리스트 생성
+      if not actor_img_list:
+        actor_img_list = '-'
+        actor_imgs.append(actor_img_list)
+      else:
+        new_actor_img_list = []
+        for img in actor_img_list:
+            new_actor_img_list.append(img.get("src"))
+        actor_img_list = ','.join(new_actor_img_list)
+        actor_imgs.append(actor_img_list)
+
 
       musical_id.append(json_html["data"][i]["prodId"])
       site_link.append(url)
@@ -64,10 +93,15 @@ try:
         dict_musical['running_time'] = runningTime[i]
         dict_musical['site_link'] = site_link[i]
         dict_musical['actors'] = actors[i]
+        if actors[i] != "-":
+            dict_musical['actor_imgs'] = actor_imgs[i]
+            dict_musical['roles'] = roles[i]
+        else:
+            dict_musical.pop('actor_imgs', None)
+            dict_musical.pop('roles', None)
         print(dict_musical)
   lambda_handler(None, None)
 
+
 except:
    pass
-
-
