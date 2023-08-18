@@ -60,13 +60,13 @@ def lambda_handler(event, context):
 
     soup = BeautifulSoup(response.text, 'html.parser')
     musicals = soup.select('#yesSchList > li > div')
-    request_url = "http://localhost:8080/api/musicals/"
+    request_url = "http://localhost:8080/api/musicals"
 
     for musical in musicals:
         u = musical.select('a')[0]['href']
         info = get_info(u)
         print(info)
-        # response = requests.post(request_url, json=info)
+        response = requests.post(request_url, json=info)
         print(response.text)
         print(response.status_code)
 

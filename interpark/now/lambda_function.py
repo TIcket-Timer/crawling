@@ -21,11 +21,7 @@ def save(musical):
     print(response.text)
 
 
-def work_thread(musicals, thread_num=10):
-    pool = ThreadPool(thread_num)
-    pool.map(save, musicals)
-    pool.close()
-    pool.join()
+
 
 def get_actors(goods_number):
     url = f'https://api-ticketfront.interpark.com/v1/goods/casting?castingRole=LEAD&goodsCode={goods_number}'
@@ -89,25 +85,8 @@ def lambda_handler(event, context):
     # 디코딩
     text = f.read().decode('euc-kr')
     soup = BeautifulSoup(text, 'html.parser')
-    musicals = soup.select('span.fw_bold > a')
     musicals = soup.select('td.RKthumb')
-    print(musicals)
-    work_thread(musicals, 100)
-    request = [] # Musical 정보
-    # for musical in musicals:
-    #     u = musical.select('a')[0]['href']
-    #     goods_number = get_goods_number(musical.select('a')[0]['href'])
-    #     image_url = musical.select('a')[0].select('img')[0]['src']
-    #     # 뮤지컬 정보 얻기
-    #     info = get_info(goods_number)
-    #     info['poster_url'] = image_url
-    #     request.append(info)
-    #     print(info)
-    #
-    #     # 배우 정보 얻기
-    #     actors = get_actors(goods_number)
-    #     print(actors)
-    #
-    #     # print(res)
-    # 공연
+    for musical in musicals:
+        save(musical)
+
 lambda_handler(None, None)
