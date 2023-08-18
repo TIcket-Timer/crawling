@@ -2,10 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
-from collections import defaultdict
-import json
-import requests
-from multiprocessing.dummy import Pool as ThreadPool
+
 def save(musical):
     u = musical.select('a')[0]['href']
     goods_number = get_goods_number(musical.select('a')[0]['href'])
