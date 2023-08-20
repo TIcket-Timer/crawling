@@ -28,6 +28,7 @@ def lambda_handler(event, context):
         print("제목 : ",title[i].text.strip())
         link = "https://ticket.melon.com/csoon" + title[i].attrs['href'].replace(".","")
         link = link[:37] + "." + link[37:]
-        print("링크 : ",link)
+        print("링크 : ", link)
+        print("musicalId : ", link[-4:])
         print()
 lambda_handler(None, None)
