@@ -9,7 +9,7 @@ header = {
 data = {
     "orderType" : "0",
     "pageIndex" : "1",
-    "schGcode" : "GENRE_ART_ALL",
+    "schGcode" : "GENRE_ALL",
     "schText" : "뮤지컬"
 }
     
@@ -17,7 +17,7 @@ res = requests.post(url,headers=header,json=data)
 html = res.text
 soup = BeautifulSoup(html,'html.parser')
 openDates = soup.select(".date")
-title = soup.select(".link_consert > a")
+title = soup.select(".tit")
 
 def lambda_handler(event, context):
     for i in range(10):
@@ -31,4 +31,3 @@ def lambda_handler(event, context):
         print("링크 : ",link)
         print()
 lambda_handler(None, None)
-
