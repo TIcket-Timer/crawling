@@ -27,7 +27,7 @@ try:
   for i in range(17):
       if json_html["data"][i]["perfTypeName"] != "뮤지컬":
           continue
-
+     
       periodInfo = json_html["data"][i]["periodInfo"]
       url = "https://ticket.melon.com/performance/index.htm?prodId=" + str(json_html["data"][i]["prodId"])
       res = requests.get(url,headers=header)
@@ -54,7 +54,7 @@ try:
         roles.append(casting_list)
       else:
         new_casting_list = []
-        for casting in casting_list: 
+        for casting in casting_list:
            new_casting_list.append(casting.text)
         casting_list = ','.join(new_casting_list)
         roles.append(casting_list)
@@ -70,7 +70,6 @@ try:
         actor_img_list = ','.join(new_actor_img_list)
         actor_imgs.append(actor_img_list)
 
-
       musical_id.append(json_html["data"][i]["prodId"])
       site_link.append(url)
       title.append(json_html["data"][i]["subTitle"])
@@ -80,9 +79,11 @@ try:
       place.append(json_html["data"][i]["placeName"])
       runningTime.append(json_html["data"][i]["runningTime"])
 
+except:
+   pass
 
-  def lambda_handler(event, context):
-      for i in range(30):
+def lambda_handler():
+    for i in range(len(musical_id)):
         dict_musical['musical_id'] = musical_id[i]
         dict_musical['site_id'] = 2
         dict_musical['title'] = title[i]
@@ -100,8 +101,5 @@ try:
             dict_musical.pop('actor_imgs', None)
             dict_musical.pop('roles', None)
         print(dict_musical)
-  lambda_handler(None, None)
 
-
-except:
-   pass
+lambda_handler()
