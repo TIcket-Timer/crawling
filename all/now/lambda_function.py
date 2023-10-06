@@ -149,6 +149,7 @@ def yes24():
         info = get_info_yes24(u)
         musical_request_url = 'http://localhost:8080/api/musicals'
         response = requests.post(musical_request_url, json=info)
+        print(response.text)
         
 
 

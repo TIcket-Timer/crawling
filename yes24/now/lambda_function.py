@@ -7,7 +7,6 @@ def get_info(url):
         exit(0)
 
     soup = BeautifulSoup(response.text, 'html.parser')
-
     id = url[(url.find('=') + 1):]
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -64,6 +63,7 @@ def lambda_handler(event, context):
 
     for musical in musicals:
         u = musical.select('a')[0]['href']
+        print(u)
         info = get_info(u)
         print(info)
         # response = requests.post(request_url, json=info)
