@@ -15,7 +15,7 @@ def save(musical):
     res['posterUrl'] = image_url
     print(res)
     headers = {
-        'Authorization':'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTY1Nzk4NjAsImV4cCI6MTY5NjYwOTg2MH0.Bpg4IAZYz5d3H5_q-isxxy3VNFw3GUOB_Aj4hppKej8'
+        'Authorization':'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTcxMjI0MTksImV4cCI6MTY5NzE1MjQxOX0.d-awE0NkewzUNk-S0K0cLVM7Yi-xsAcXJm2VoURYBcA'
     }
     musical_request_url = f'{host}/api/musicals'
     response = requests.post(musical_request_url, json=res, headers=headers)
