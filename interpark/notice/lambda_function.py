@@ -4,6 +4,10 @@ from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
 import re
 host = "http://localhost:8080"
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
+    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTY1OTI4MDIsImV4cCI6MTY5OTU5MjgwMn0.8fVYvhAI2LP_RsgR0VNIYljLSuv6cCv5tkV3NunKJL4"
+}
 def extract_no_from_url(url):
     parsed_url = urlparse(url)
     query_string = parsed_url.query
@@ -25,16 +29,16 @@ def get_title(tr):
 def get_url(tr):
     temp = tr.select('td.subject > a')[0]
     return temp['href']
-def get_image_url(no):
-    url = f"http://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no={no}&groupno={no}&seq=0&KindOfGoods=TICKET&Genre=1&sort=WriteDate"
+def get_image_url_content(url):
+    # url = f"http://ticket.interpark.com/webzine/paper/TPNoticeView.asp?bbsno=34&pageno=1&stext=&no={no}&groupno={no}&seq=0&KindOfGoods=TICKET&Genre=1&sort=WriteDate"
     f = urlopen(url)
 
     # 디코딩
-    text = f.read().decode('euc-kr')
+    text = f.read().decode('cp949')
     soup = BeautifulSoup(text, 'html.parser')
-    print('asd')
-    res = soup.select('span.poster > img')[0]['src']
-    return res
+    image_url = soup.select('span.poster > img')[0]['src']
+    content = soup.select('div.desc > div.introduce > div.data > p')[0].text
+    return image_url, content
 def save(notice):
 
     musical_request_url = f'{host}/api/musicalNotices'
@@ -46,10 +50,11 @@ def save(notice):
     print(response.text)
 def lambda_handler(event, context):
     f = urlopen(
-        'http://ticket.interpark.com/webzine/paper/TPNoticeList_iFrame.asp?bbsno=34&pageno=1&KindOfGoods=TICKET&Genre=1&sort=WriteDate&stext=')
+        'http://ticket.interpark.com/webzine/paper/TPNoticeList_iFrame.asp?bbsno=34&pageno=1&KindOfGoods=TICKET&Genre=1&sort=WriteDate&stext=',
+    )
 
     # 디코딩
-    text = f.read().decode('euc-kr')
+    text = f.read().decode('cp949')
     soup = BeautifulSoup(text, 'html.parser')
 
     # 공연
@@ -57,18 +62,17 @@ def lambda_handler(event, context):
 
     print(len(arr))
     for i in range(len(arr)):
-        print(arr[i].select('td.subject'))
-        print(get_date(arr[i]))
-        print(get_title(arr[i]))
-        print(get_url(arr[i]))
+        image_url, content = get_image_url_content(f'https://ticket.interpark.com/webzine/paper/{get_url(arr[i])}')
         request = {
             'id' : extract_no_from_url(get_url(arr[i])),
             'siteCategory': 'INTERPARK',
             'openDateTime': get_date(arr[i]),
             'title' : get_title(arr[i]),
-            'url' : get_url(arr[i])
-            # 'image_url' : get_image_url(extract_no_from_url(get_url(arr[i])))
-
+            'url' : get_url(arr[i]),
+            'content' : content,
+            'image_url' : image_url
         }
-        save(request)
+        print(request)
+
+        # save(request)
 lambda_handler(None, None)

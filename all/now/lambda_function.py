@@ -6,9 +6,9 @@ from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTc0NjMzNDEsImV4cCI6MTY5NzQ5MzM0MX0.grvQ5U8QiRVkNB8NBu0H8FKwZcltPmLUwwNj3BrkJ7U"
+    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTY1OTI4MDIsImV4cCI6MTY5OTU5MjgwMn0.8fVYvhAI2LP_RsgR0VNIYljLSuv6cCv5tkV3NunKJL4"
 }
-host = "http://localhost:8080"
+host = "http://43.202.78.122:8080"
 def get_date(tr):  # 공연 날짜
     input_date_time = tr.select('td.date')[0].text
     cleaned_string = re.sub(r'[^0-9]', '', input_date_time)
@@ -270,6 +270,6 @@ def melon():
             print(response.text)
 def lambda_handler(event, context):
     # interpark()
-    # yes24()
-    melon()
+    yes24()
+    # melon()
 lambda_handler(None, None)
