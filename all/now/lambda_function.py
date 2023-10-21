@@ -6,31 +6,43 @@ from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTY1OTI4MDIsImV4cCI6MTY5OTU5MjgwMn0.8fVYvhAI2LP_RsgR0VNIYljLSuv6cCv5tkV3NunKJL4"
+    "Authorization" : "Bearer "
 }
 host = "http://43.202.78.122:8080"
+total_cnt = 0
+conflict_cnt = 0
+error_cnt = 0
+success_cnt = 0
+
+
 def get_date(tr):  # 공연 날짜
     input_date_time = tr.select('td.date')[0].text
     cleaned_string = re.sub(r'[^0-9]', '', input_date_time)
     return '20'+cleaned_string
 def save(musical):
-    u = musical.select('a')[0]['href']
-    goods_number = get_goods_number(musical.select('a')[0]['href'])
-    image_url = musical.select('a')[0].select('img')[0]['src']
-    res = get_info(goods_number)
-    res['posterUrl'] = image_url
-    print(res)
-    # headers = {
-    #     'Authorization':'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTcxMjI0MTksImV4cCI6MTY5NzE1MjQxOX0.d-awE0NkewzUNk-S0K0cLVM7Yi-xsAcXJm2VoURYBcA'
-    # }
-    musical_request_url = f'{host}/api/musicals'
-    response = requests.post(musical_request_url, json=res, headers=headers)
-    print(response.text)
-    actors = get_actors(goods_number)
-    for i in actors:
-        actor_request_url = f'{host}/api/actors'
-        response = requests.post(actor_request_url, json=i, headers=headers)
-    print(response.text)
+    global total_cnt
+    global conflict_cnt
+    global success_cnt
+    total_cnt+=1
+    temp = requests.get(f"{host}/api/musicalNotices/{musical['id']}")
+
+    if temp.status_code == 404:
+        u = musical.select('a')[0]['href']
+        goods_number = get_goods_number(musical.select('a')[0]['href'])
+        image_url = musical.select('a')[0].select('img')[0]['src']
+        res = get_info(goods_number)
+        res['posterUrl'] = image_url
+        musical_request_url = f'{host}/api/musicals'
+        response = requests.post(musical_request_url, json=res, headers=headers)
+        print(response.text)
+        actors = get_actors(goods_number)
+        for i in actors:
+            actor_request_url = f'{host}/api/actors'
+            response = requests.post(actor_request_url, json=i, headers=headers)
+        print(response.text)
+        success_cnt+=1
+    elif temp.status_code == 200:
+        conflict_cnt+=1
 
 
 
@@ -93,12 +105,13 @@ def get_goods_number(url):
 def interpark():
     f = urlopen(
         'http://ticket.interpark.com/TPGoodsList.asp?Ca=Mus&Sort=2')
-
+    global total_cnt
     # 디코딩
     text = f.read().decode('cp949')
     soup = BeautifulSoup(text, 'html.parser')
     musicals = soup.select('td.RKthumb')
     for musical in musicals:
+        total_cnt+=1
         save(musical)
 
 def get_info_yes24(url):
@@ -153,7 +166,10 @@ def get_info_yes24(url):
 def yes24():
     url = "https://www.yes24.com/Product/Search?domain=TICKET&query=%EB%AE%A4%EC%A7%80%EC%BB%AC&page=1&size=1000&dispNo2=%EB%AE%A4%EC%A7%80%EC%BB%AC&bookingStat=%EC%98%88%EB%A7%A4%EC%A4%91"
     num = 0
-
+    global success_cnt
+    global conflict_cnt
+    global error_cnt
+    global total_cnt
     response = requests.get(url)
     if response.status_code != 200:
         exit(0)
@@ -162,11 +178,20 @@ def yes24():
     musicals = soup.select('#yesSchList > li > div')
 
     for musical in musicals:
-        u = musical.select('a')[0]['href']
-        info = get_info_yes24(u)
-        musical_request_url = f'{host}/api/musicals'
-        response = requests.post(musical_request_url, json=info, headers=headers)
-        print(response.text)
+        total_cnt+=1
+        try:
+            u = musical.select('a')[0]['href']
+            info = get_info_yes24(u)
+            musical_request_url = f'{host}/api/musicals'
+        except:
+            error_cnt+=1
+        temp = requests.get(f"{host}/api/musicalNotices/{info['id']}")
+        if temp.status_code == 404:
+            response = requests.post(musical_request_url, json=info, headers=headers)
+            print(response.text)
+            success_cnt+=1
+        elif temp.status_code == 200:
+            conflict_cnt+=1
 
 
 melon_url = "https://ticket.melon.com/performance/ajax/prodList.json?commCode=&sortType=REAL_RANK&perfGenreCode=GENRE_ART_ALL&perfThemeCode=&filterCode=FILTER_ALL&v=1"
@@ -188,7 +213,12 @@ html = res.text
 json_html = json.loads(html)
 
 def melon():
+    global success_cnt
+    global conflict_cnt
+    global error_cnt
+    global total_cnt
     for i in range(17):
+        total_cnt+=1
         try:
             if json_html["data"][i]["perfTypeName"] != "뮤지컬":
                 continue
@@ -246,7 +276,9 @@ def melon():
             end_date.append(cleaned_end)
             place.append(json_html["data"][i]["placeName"])
             runningTime.append(json_html["data"][i]["runningTime"])
-        except:
+        except Exception as ex:
+            print(f'error : {url}, {ex}')
+            error_cnt+=1
             continue
 
         for i in range(len(musical_id)):
@@ -266,10 +298,16 @@ def melon():
         # else:
         #     dict_musical.pop('actor_imgs', None)
         #     dict_musical.pop('roles', None)
-            response = requests.post(f'{host}/api/musicals', json=dict_musical, headers=headers)
-            print(response.text)
+            temp = requests.get(f"{host}/api/musicalNotices/{musical_id[i]}")
+            if temp.status_code == 404:
+                response = requests.post(f'{host}/api/musicals', json=dict_musical, headers=headers)
+                print(response.text)
+                success_cnt+=1
+            elif temp.status_code == 200:
+                conflict_cnt+=1
 def lambda_handler(event, context):
     # interpark()
-    yes24()
-    # melon()
+    # yes24()
+    melon()
+    print(f"total : {total_cnt} conflict : {conflict_cnt} success : {success_cnt} error : {error_cnt}")
 lambda_handler(None, None)
