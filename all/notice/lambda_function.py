@@ -3,10 +3,10 @@ from bs4 import BeautifulSoup
 from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
 import re
-host = "http://43.202.78.122:8080"
+host = "http://localhost:8080"
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Authorization" : "Bearer "
+    "Authorization" : "Bearer .."
 }
 total_cnt = 0
 conflict_cnt = 0

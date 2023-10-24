@@ -6,9 +6,9 @@ from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Authorization" : "Bearer "
+    "Authorization" : "Bearer .."
 }
-host = "http://43.202.78.122:8080"
+host = "http://localhost:8080"
 total_cnt = 0
 conflict_cnt = 0
 error_cnt = 0
@@ -24,13 +24,13 @@ def save(musical):
     global conflict_cnt
     global success_cnt
     total_cnt+=1
-    temp = requests.get(f"{host}/api/musicalNotices/{musical['id']}")
+    u = musical.select('a')[0]['href']
+    goods_number = get_goods_number(musical.select('a')[0]['href'])
+    image_url = musical.select('a')[0].select('img')[0]['src']
+    res = get_info(goods_number)
+    temp = requests.get(f"{host}/api/musicalNotices/{res['id']}")
 
     if temp.status_code == 404:
-        u = musical.select('a')[0]['href']
-        goods_number = get_goods_number(musical.select('a')[0]['href'])
-        image_url = musical.select('a')[0].select('img')[0]['src']
-        res = get_info(goods_number)
         res['posterUrl'] = image_url
         musical_request_url = f'{host}/api/musicals'
         response = requests.post(musical_request_url, json=res, headers=headers)
@@ -306,8 +306,8 @@ def melon():
             elif temp.status_code == 200:
                 conflict_cnt+=1
 def lambda_handler(event, context):
-    # interpark()
-    # yes24()
+    interpark()
+    yes24()
     melon()
     print(f"total : {total_cnt} conflict : {conflict_cnt} success : {success_cnt} error : {error_cnt}")
 lambda_handler(None, None)
