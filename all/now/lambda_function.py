@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
+from requests.structures import CaseInsensitiveDict
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
     "Authorization" : "Bearer .."
@@ -28,7 +29,7 @@ def save(musical):
     goods_number = get_goods_number(musical.select('a')[0]['href'])
     image_url = musical.select('a')[0].select('img')[0]['src']
     res = get_info(goods_number)
-    temp = requests.get(f"{host}/api/musicalNotices/{res['id']}")
+    temp = requests.get(f"{host}/api/musicals/INTERPARK{res['id']}", headers=headers)
 
     if temp.status_code == 404:
         res['posterUrl'] = image_url
@@ -39,10 +40,12 @@ def save(musical):
         for i in actors:
             actor_request_url = f'{host}/api/actors'
             response = requests.post(actor_request_url, json=i, headers=headers)
-        print(response.text)
+        # print(response.text)
         success_cnt+=1
     elif temp.status_code == 200:
         conflict_cnt+=1
+    else:
+        print(temp.text)
 
 
 
@@ -185,13 +188,16 @@ def yes24():
             musical_request_url = f'{host}/api/musicals'
         except:
             error_cnt+=1
-        temp = requests.get(f"{host}/api/musicalNotices/{info['id']}")
+        temp = requests.get(f"{host}/api/musicals/YES24{info['id']}", headers=headers)
         if temp.status_code == 404:
             response = requests.post(musical_request_url, json=info, headers=headers)
+
             print(response.text)
             success_cnt+=1
         elif temp.status_code == 200:
             conflict_cnt+=1
+        else:
+            print(temp.text)
 
 
 melon_url = "https://ticket.melon.com/performance/ajax/prodList.json?commCode=&sortType=REAL_RANK&perfGenreCode=GENRE_ART_ALL&perfThemeCode=&filterCode=FILTER_ALL&v=1"
@@ -298,13 +304,15 @@ def melon():
         # else:
         #     dict_musical.pop('actor_imgs', None)
         #     dict_musical.pop('roles', None)
-            temp = requests.get(f"{host}/api/musicalNotices/{musical_id[i]}")
+            temp = requests.get(f"{host}/api/musicals/MELON{musical_id[i]}", headers=headers)
             if temp.status_code == 404:
                 response = requests.post(f'{host}/api/musicals', json=dict_musical, headers=headers)
                 print(response.text)
                 success_cnt+=1
             elif temp.status_code == 200:
                 conflict_cnt+=1
+            else:
+                print(temp.text)
 def lambda_handler(event, context):
     interpark()
     yes24()
