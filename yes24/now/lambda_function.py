@@ -15,7 +15,14 @@ def get_info(url):
 
     poster_url = soup.select('div.rn-product-imgbox > img')[0]['src']
 
+    age = soup.select('div.rn-product-area1 > dl > dd')[0].text.strip()
+
     running_time = soup.select('div.rn-product-area1 > dl > dd')[1].text.strip()
+
+    prices_arr = []
+    prices = soup.select('dd.rn-product-price > ul > li')
+    for price in prices:
+        prices_arr.append(price.text.strip())
 
     actors = soup.select('div.rn-product-area1 > dl > dd')[2].select('a')
     actor_str = ''
@@ -43,8 +50,9 @@ def get_info(url):
         'endDate' : end_date,
         'place' : place,
         'runningTime' : running_time,
-        'siteLink' : url
-
+        'siteLink' : url,
+        'age' : age,
+        'price' : prices_arr
     }
 
     return res
@@ -63,11 +71,7 @@ def lambda_handler(event, context):
 
     for musical in musicals:
         u = musical.select('a')[0]['href']
-        print(u)
         info = get_info(u)
         print(info)
-        # response = requests.post(request_url, json=info)
-        # print(response.text)
-        # print(response.status_code)
 
 lambda_handler(None, None)
