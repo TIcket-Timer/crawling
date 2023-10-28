@@ -7,7 +7,6 @@ def get_info(url):
         exit(0)
 
     soup = BeautifulSoup(response.text, 'html.parser')
-
     id = url[(url.find('=') + 1):]
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -16,7 +15,14 @@ def get_info(url):
 
     poster_url = soup.select('div.rn-product-imgbox > img')[0]['src']
 
+    age = soup.select('div.rn-product-area1 > dl > dd')[0].text.strip()
+
     running_time = soup.select('div.rn-product-area1 > dl > dd')[1].text.strip()
+
+    prices_arr = []
+    prices = soup.select('dd.rn-product-price > ul > li')
+    for price in prices:
+        prices_arr.append(price.text.strip())
 
     actors = soup.select('div.rn-product-area1 > dl > dd')[2].select('a')
     actor_str = ''
@@ -24,7 +30,7 @@ def get_info(url):
         actor_str += (actor.text + ', ')
     actor_str = actor_str[:-2]
 
-    date = soup.select('span.ps-date')[0].text
+    date = soup.select('span.ps-date')[0].text.replace('.', '')
 
     if '~' not in date :
         start_date = date
@@ -36,18 +42,19 @@ def get_info(url):
     place = soup.select('span.ps-location')[0].text
 
     res = {
-        'musical_id' : id,
-        'site_id' : 3,
+        'id' : id,
+        'siteCategory' : 'YES24',
         'title' : title,
-        'poster_url' : poster_url,
-        'start_date' : start_date,
-        'end_date' : end_date,
+        'posterUrl' : poster_url,
+        'startDate' : start_date,
+        'endDate' : end_date,
         'place' : place,
-        'running_time' : running_time,
-        'site_link' : url,
-        'actors' : actor_str
+        'runningTime' : running_time,
+        'siteLink' : url,
+        'age' : age,
+        'price' : prices_arr
     }
-    print(res)
+
     return res
 
 def lambda_handler(event, context):
@@ -63,6 +70,7 @@ def lambda_handler(event, context):
 
     for musical in musicals:
         u = musical.select('a')[0]['href']
-        get_info(u)
+        info = get_info(u)
+        print(info)
 
 lambda_handler(None, None)
