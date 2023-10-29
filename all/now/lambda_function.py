@@ -7,19 +7,19 @@ from urllib.request import urlopen
 from requests.structures import CaseInsensitiveDict
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Authorization" : "Bearer .."
+    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTY1OTI4MDIsImV4cCI6MTY5OTU5MjgwMn0.8fVYvhAI2LP_RsgR0VNIYljLSuv6cCv5tkV3NunKJL4"
 }
-host = "http://localhost:8080"
+host = "http://43.202.78.122:8080"
 total_cnt = 0
 conflict_cnt = 0
 error_cnt = 0
 success_cnt = 0
 
-
 def get_date(tr):  # 공연 날짜
     input_date_time = tr.select('td.date')[0].text
     cleaned_string = re.sub(r'[^0-9]', '', input_date_time)
     return '20'+cleaned_string
+
 def save(musical):
     global total_cnt
     global conflict_cnt
@@ -46,9 +46,6 @@ def save(musical):
         conflict_cnt+=1
     else:
         print(temp.text)
-
-
-
 
 def get_actors(goods_number):
     url = f'https://api-ticketfront.interpark.com/v1/goods/casting?castingRole=LEAD&goodsCode={goods_number}'
@@ -79,6 +76,16 @@ def get_info(goods_number):
     end_date = data['playEndDate']
     place = data['placeName']
     running_time = data['runningTime']
+    age = data['viewRateName']
+
+    price_url = f'https://api-ticketfront.interpark.com/v1/goods/23008707/prices/group'
+    response = requests.get(price_url, headers=headers)
+    dict = response.json()
+    values = dict.values()
+    price_arr = []
+    for value in values:
+        price_arr.append(f"{value['기본가'][0]['seatGradeName']} : {value['기본가'][0]['salesPrice']}")
+
     site_link = f'https://tickets.interpark.com/goods/{goods_number}'
     res = {
         'id' : str(goods_number),
@@ -90,6 +97,8 @@ def get_info(goods_number):
         'place' : place,
         'runningTime' : running_time,
         'siteLink' : site_link,
+        'age' : age,
+        'price' : price_arr
         # 'actors' : get_actors(goods_number)
     }
     return res
@@ -134,6 +143,13 @@ def get_info_yes24(url):
 
     running_time = soup.select('div.rn-product-area1 > dl > dd')[1].text.strip()
 
+    age = soup.select('div.rn-product-area1 > dl > dd')[0].text.strip()
+
+    prices_arr = []
+    prices = soup.select('dd.rn-product-price > ul > li')
+    for price in prices:
+        prices_arr.append(price.text.strip())
+
     actors = soup.select('div.rn-product-area1 > dl > dd')[2].select('a')
     actor_str = ''
     for actor in actors :
@@ -160,7 +176,9 @@ def get_info_yes24(url):
         'endDate' : end_date,
         'place' : place,
         'runningTime' : running_time,
-        'siteLink' : url
+        'siteLink' : url,
+        'age' : age,
+        'price' : prices_arr
 
     }
 

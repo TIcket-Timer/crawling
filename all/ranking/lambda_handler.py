@@ -6,9 +6,9 @@ from urllib.parse import parse_qs, urlparse
 from urllib.request import urlopen
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Authorization" : "Bearer .."
+    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTY1OTI4MDIsImV4cCI6MTY5OTU5MjgwMn0.8fVYvhAI2LP_RsgR0VNIYljLSuv6cCv5tkV3NunKJL4"
 }
-host = "http://localhost:8080"
+host = "http://43.202.78.122:8080"
 
 def extract_from_url(name, url):
     parsed_url = urlparse(url)

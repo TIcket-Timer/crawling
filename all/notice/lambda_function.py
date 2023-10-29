@@ -6,7 +6,7 @@ import re
 host = "http://localhost:8080"
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Authorization" : "Bearer "
+    "Authorization" : "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzZXJ2ZXJJZCI6Imtha2FvMjgwMzE2MzU4NyIsImlkIjoxLCJ0eXBlIjoiYWNjZXNzVG9rZW4iLCJpYXQiOjE2OTY1OTI4MDIsImV4cCI6MTY5OTU5MjgwMn0.8fVYvhAI2LP_RsgR0VNIYljLSuv6cCv5tkV3NunKJL4"
 }
 total_cnt = 0
 conflict_cnt = 0
@@ -62,7 +62,7 @@ def save(notice):
     global success_cnt
     total_cnt+=1
     musical_request_url = f'{host}/api/musicalNotices'
-    temp = requests.get(f"{host}/api/musicalNotices/{notice['id']}")
+    temp = requests.get(f"{host}/api/musicalNotices/{notice['id']}", headers=headers)
     # 저장된 데이터가 없을 때만 저장
     if temp.status_code == 404:
         response = requests.post(musical_request_url, json=notice, headers=headers)
@@ -71,6 +71,8 @@ def save(notice):
         success_cnt+=1
     elif temp.status_code == 200:
         conflict_cnt+=1
+    else:
+        print(temp.text)
 
 def interpark():
     f = urlopen(
