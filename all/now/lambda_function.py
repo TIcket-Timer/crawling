@@ -235,7 +235,24 @@ actor_imgs = []
 res = requests.get(melon_url,headers=headers)
 html = res.text
 json_html = json.loads(html)
+age = []
+price = []
 
+
+### 관람등급 추출
+def age_def(age_list):
+    if len(age_list) >= 2:
+        second_txt_info = age_list[1].text.strip()
+        age.append(second_txt_info)
+
+
+### 가격 리스트 생성
+def price_def(price_list):
+    new_price_list = []
+    for seat_price in price_list:
+        new_price_list.append(
+            seat_price.select_one(".seat_name").text + " " + seat_price.select_one(".price").text)
+    price.append(new_price_list)
 def melon():
     global success_cnt
     global conflict_cnt
@@ -255,6 +272,10 @@ def melon():
             actor_list = soup.select(".singer") # 배우명
             casting_list = soup.select(".part") # 배역
             actor_img_list = soup.select(".thumb > .crop img") # 사진
+            age_list = soup.select(".box_consert_info > .info_right > .txt_info")  # 관람등급 몇세 이상
+            price_list = soup.select(".box_bace_price > .list_seat li")  # 좌석명, 가격
+            age_def(age_list=age_list)
+            price_def(price_list=price_list)
 
             # 배우명 리스트 생성
             if not actor_list:
@@ -315,6 +336,9 @@ def melon():
             dict_musical['place'] = place[i]
             dict_musical['runningTime'] = runningTime[i]
             dict_musical['siteLink'] = site_link[i]
+            dict_musical['age'] = age[i]
+            dict_musical['price'] = price[i]
+            print(dict_musical)
         # dict_musical['actors'] = actors[i]
         # if actors[i] != "-":
         #     dict_musical['actor_imgs'] = actor_imgs[i]
@@ -332,8 +356,8 @@ def melon():
             else:
                 print(temp.text)
 def lambda_handler(event, context):
-    interpark()
-    yes24()
+    # interpark()
+    # yes24()
     melon()
     print(f"total : {total_cnt} conflict : {conflict_cnt} success : {success_cnt} error : {error_cnt}")
 lambda_handler(None, None)
